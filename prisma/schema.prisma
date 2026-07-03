@@ -1,0 +1,244 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum VocabularyLevel {
+  BEGINNER     @map("beginner")
+  INTERMEDIATE @map("intermediate")
+  ADVANCED     @map("advanced")
+
+  @@map("vocabulary_level")
+}
+
+enum LearningStatus {
+  NEW       @map("new")
+  LEARNING  @map("learning")
+  REVIEWING @map("reviewing")
+  MASTERED  @map("mastered")
+
+  @@map("learning_status")
+}
+
+enum ReviewRating {
+  AGAIN    @map("again")
+  HARD     @map("hard")
+  EASY     @map("easy")
+  MASTERED @map("mastered")
+
+  @@map("review_rating")
+}
+
+enum ReviewSessionStatus {
+  IN_PROGRESS @map("in_progress")
+  COMPLETED   @map("completed")
+  ABANDONED   @map("abandoned")
+
+  @@map("review_session_status")
+}
+
+enum AchievementType {
+  WORDS_LEARNED     @map("words_learned")
+  REVIEWS_COMPLETED @map("reviews_completed")
+  STREAK_DAYS       @map("streak_days")
+  WORDS_MASTERED    @map("words_mastered")
+  XP_EARNED         @map("xp_earned")
+
+  @@map("achievement_type")
+}
+
+enum MissionType {
+  WORDS_LEARNED  @map("words_learned")
+  WORDS_REVIEWED @map("words_reviewed")
+  STREAK_DAYS    @map("streak_days")
+  WORDS_MASTERED @map("words_mastered")
+
+  @@map("mission_type")
+}
+
+model User {
+  id               String    @id @db.Uuid
+  name             String    @db.VarChar(120)
+  email            String    @unique @db.VarChar(320)
+  avatarUrl        String?   @map("avatar_url") @db.Text
+  xp               Int       @default(0)
+  level            Int       @default(1)
+  streak           Int       @default(0)
+  timeZone         String    @default("America/Sao_Paulo") @map("time_zone") @db.VarChar(64)
+  lastActivityDate DateTime? @map("last_activity_date") @db.Date
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  vocabulary     UserVocabulary[]
+  reviewSessions ReviewSession[]
+  reviewAttempts ReviewAttempt[]
+  achievements   UserAchievement[]
+  dailyMissions  UserDailyMission[]
+
+  @@map("users")
+}
+
+model Vocabulary {
+  id                 String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  word               String          @unique @db.VarChar(120)
+  pronunciation      String          @db.VarChar(160)
+  translation        String          @db.VarChar(240)
+  example            String          @db.Text
+  exampleTranslation String          @map("example_translation") @db.Text
+  category           String          @db.VarChar(80)
+  level              VocabularyLevel
+  createdAt          DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  users UserVocabulary[]
+
+  @@index([category])
+  @@index([level])
+  @@index([category, level])
+  @@map("vocabulary")
+}
+
+model UserVocabulary {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String         @map("user_id") @db.Uuid
+  vocabularyId   String         @map("vocabulary_id") @db.Uuid
+  mastery        Int            @default(0) @db.SmallInt
+  correctCount   Int            @default(0) @map("correct_count")
+  wrongCount     Int            @default(0) @map("wrong_count")
+  isSaved        Boolean        @default(false) @map("is_saved")
+  status         LearningStatus @default(NEW)
+  nextReviewAt   DateTime?      @map("next_review_at") @db.Timestamptz(3)
+  lastReviewedAt DateTime?      @map("last_reviewed_at") @db.Timestamptz(3)
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vocabulary Vocabulary      @relation(fields: [vocabularyId], references: [id], onDelete: Restrict)
+  attempts   ReviewAttempt[]
+
+  @@unique([userId, vocabularyId])
+  @@unique([id, userId])
+  @@index([userId, status])
+  @@index([userId, nextReviewAt])
+  @@index([userId, isSaved])
+  @@map("user_vocabulary")
+}
+
+model ReviewSession {
+  id             String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String              @map("user_id") @db.Uuid
+  status         ReviewSessionStatus @default(IN_PROGRESS)
+  totalCards     Int                 @default(0) @map("total_cards")
+  correctAnswers Int                 @default(0) @map("correct_answers")
+  wrongAnswers   Int                 @default(0) @map("wrong_answers")
+  xpEarned       Int                 @default(0) @map("xp_earned")
+  completedAt    DateTime?           @map("completed_at") @db.Timestamptz(3)
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempts ReviewAttempt[]
+
+  @@unique([id, userId])
+  @@index([userId, status, createdAt])
+  @@index([userId, completedAt])
+  @@map("review_sessions")
+}
+
+model ReviewAttempt {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientRequestId  String       @unique @map("client_request_id") @db.Uuid
+  sessionId        String       @map("session_id") @db.Uuid
+  userId           String       @map("user_id") @db.Uuid
+  userVocabularyId String       @map("user_vocabulary_id") @db.Uuid
+  rating           ReviewRating
+  isCorrect        Boolean      @map("is_correct")
+  masteryBefore    Int          @map("mastery_before") @db.SmallInt
+  masteryAfter     Int          @map("mastery_after") @db.SmallInt
+  xpEarned         Int          @map("xp_earned")
+  nextReviewAt     DateTime     @map("next_review_at") @db.Timestamptz(3)
+  createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  session        ReviewSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userVocabulary UserVocabulary @relation(fields: [userVocabularyId], references: [id], onDelete: Restrict)
+
+  @@index([sessionId])
+  @@index([userId, createdAt])
+  @@index([userVocabularyId, createdAt])
+  @@map("review_attempts")
+}
+
+model Achievement {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code          String          @unique @db.VarChar(80)
+  title         String          @db.VarChar(120)
+  description   String          @db.Text
+  icon          String          @db.VarChar(80)
+  requiredValue Int             @map("required_value")
+  type          AchievementType
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  users UserAchievement[]
+
+  @@index([type, requiredValue])
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  achievementId String   @map("achievement_id") @db.Uuid
+  unlockedAt    DateTime @default(now()) @map("unlocked_at") @db.Timestamptz(3)
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, achievementId])
+  @@index([userId, unlockedAt])
+  @@map("user_achievements")
+}
+
+model DailyMission {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String      @unique @db.VarChar(80)
+  title       String      @db.VarChar(120)
+  description String      @db.Text
+  xpReward    Int         @map("xp_reward")
+  targetValue Int         @map("target_value")
+  type        MissionType
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  users UserDailyMission[]
+
+  @@index([type])
+  @@map("daily_missions")
+}
+
+model UserDailyMission {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  missionId       String    @map("mission_id") @db.Uuid
+  currentValue    Int       @default(0) @map("current_value")
+  completed       Boolean   @default(false)
+  completedAt     DateTime? @map("completed_at") @db.Timestamptz(3)
+  rewardClaimedAt DateTime? @map("reward_claimed_at") @db.Timestamptz(3)
+  date            DateTime  @db.Date
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission DailyMission @relation(fields: [missionId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, missionId, date])
+  @@index([userId, date])
+  @@index([userId, completed, date])
+  @@map("user_daily_missions")
+}

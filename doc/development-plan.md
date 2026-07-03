@@ -28,17 +28,17 @@ Convenções:
 - [x] Adicionar scripts de typecheck, testes, migrations e seed.
 - [x] Validar lint, typecheck e build.
 
-### Step 2 — Supabase e Prisma
+### ⛔ Step 2 — Supabase e Prisma
 
-- [ ] **Etapa pendente**
+- [ ] **Etapa bloqueada** — aguardando projeto e credenciais do Supabase.
 
-- [ ] Criar/configurar projeto Supabase.
-- [ ] Configurar PostgreSQL pooled e conexão direta.
-- [ ] Criar schema Prisma com os modelos obrigatórios.
-- [ ] Adicionar `ReviewAttempt` para histórico e idempotência.
-- [ ] Criar índices, enums e constraints.
-- [ ] Executar migration inicial.
-- [ ] Validar leitura e escrita no banco.
+- [ ] ⛔ Criar/configurar projeto Supabase — aguardando projeto e credenciais.
+- [ ] ⛔ Configurar PostgreSQL pooled e conexão direta — contratos preparados em `.env.example`; faltam URLs reais.
+- [x] Criar schema Prisma com os modelos obrigatórios.
+- [x] Adicionar `ReviewAttempt` para histórico e idempotência.
+- [x] Criar índices, enums e constraints.
+- [ ] ⛔ Executar migration inicial — SQL criado e validado estaticamente; falta conexão Supabase.
+- [ ] ⛔ Validar leitura e escrita no banco — depende da migration aplicada.
 
 ### Step 3 — Seed
 
@@ -180,6 +180,16 @@ Status: concluído
 - Pendências: nenhuma no Step 1.
 - Decisões tomadas: `doc/development-plan.md` é a fonte de continuidade; Prisma 7.8 e client/adapter permanecem fixados na mesma versão; fonte do sistema será usada na fundação para manter builds offline e determinísticos.
 - Próximo passo: modelar Supabase/PostgreSQL no Prisma e preparar a migration inicial.
+
+### 2026-07-03 — Step 2
+
+Status: bloqueado
+
+- Alterações realizadas: Prisma 7 configurado; schema completo criado com nove modelos, enums, índices e relações; `ReviewAttempt` e ownership composto adicionados; migration SQL inicial gerada com checks de domínio, RLS e vínculo ao Supabase Auth; client e singleton `adapter-pg` preparados.
+- Validações executadas: `prisma format`, `prisma validate`, `prisma generate`, geração offline da migration, lint, TypeScript, testes e build concluídos com sucesso.
+- Pendências: fornecer projeto Supabase, preencher `.env.local`, aplicar a migration e executar um teste CRUD real.
+- Decisões tomadas: `User.id` reutiliza e referencia o UUID do Supabase Auth; `DIRECT_URL` é exclusiva da CLI/migrations; `DATABASE_URL` pooled é exclusiva do runtime; pool inicial limitado a três conexões por instância; tabelas públicas começam com RLS sem policies e acesso somente pelo backend.
+- Próximo passo: configurar as credenciais Supabase, executar `pnpm db:migrate:deploy` e validar leitura/escrita antes do Step 3.
 
 ## Modelo para novas atualizações
 
