@@ -29,7 +29,7 @@ export function AppShell({
       >
         Ir para o conteúdo
       </a>
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-zinc-950/80 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl sm:px-6">
+      <header className="sticky top-0 z-40 shrink-0 border-b border-white/10 bg-zinc-950/80 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl sm:px-6">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-300">

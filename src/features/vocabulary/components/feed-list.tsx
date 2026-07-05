@@ -140,7 +140,7 @@ export function FeedList({
         {items.map((item, index) => (
           <motion.div
             key={item.id}
-            className="h-full snap-start snap-always"
+            className="h-full snap-start snap-always pt-3"
             initial={
               shouldReduceMotion
                 ? false
