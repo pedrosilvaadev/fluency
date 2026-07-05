@@ -24,3 +24,62 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+::selection {
+  background: rgb(139 92 246 / 45%);
+  color: white;
+}
+
+@keyframes review-xp-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes review-confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-1rem) rotate(0deg);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(18rem) rotate(540deg);
+  }
+}
+
+.review-xp-pop {
+  animation: review-xp-pop 300ms ease-out both;
+}
+
+.review-confetti {
+  top: -0.75rem;
+  left: var(--confetti-x);
+  background: var(--confetti-color);
+  animation: review-confetti-fall 1.8s ease-in var(--confetti-delay) both;
+}
+
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

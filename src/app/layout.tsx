@@ -3,8 +3,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Fluenty",
-  description: "Aprenda inglês com vocabulário, revisão inteligente e progresso real.",
+  title: {
+    default: "Fluenty",
+    template: "%s | Fluenty",
+  },
+  description:
+    "Aprenda inglês com vocabulário, revisão inteligente e progresso real.",
 };
 
 export default function RootLayout({

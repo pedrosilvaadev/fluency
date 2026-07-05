@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fluenty
 
-## Getting Started
+Aplicação web para aprender vocabulário em inglês com feed interativo, revisão espaçada, progresso persistente e gamificação.
 
-First, run the development server:
+## Funcionalidades
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Cadastro e login com Supabase Auth por e-mail/senha e Google.
+- Confirmação de e-mail e recuperação de senha.
+- Feed com 54 palavras iniciais, pronúncia via Web Speech API e avaliações rápidas.
+- Biblioteca de favoritos com filtros por categoria, nível e status.
+- Revisão espaçada em 10 minutos, 1 dia, 3 dias ou 7 dias.
+- Histórico idempotente de tentativas e sessões transacionais.
+- XP, níveis, streak por timezone, missões diárias e conquistas.
+- Dashboard de progresso e perfil responsivo.
+
+## Stack
+
+- Next.js 16 App Router e React 19
+- TypeScript e Tailwind CSS 4
+- PostgreSQL no Supabase
+- Prisma 7 com `@prisma/adapter-pg`
+- `@supabase/ssr` e `@supabase/supabase-js`
+- Zod, Vitest e Playwright
+
+## Requisitos
+
+- Node.js 20+
+- pnpm 8+
+- Projeto Supabase
+
+## Configuração
+
+Copie `.env.example` para `.env.local` e preencha:
+
+```env
+DATABASE_URL="postgresql://postgres.PROJECT_REF:PASSWORD@TRANSACTION_POOLER_HOST:6543/postgres"
+DIRECT_URL="postgresql://postgres.PROJECT_REF:PASSWORD@SESSION_POOLER_HOST:5432/postgres"
+
+NEXT_PUBLIC_SUPABASE_URL="https://PROJECT_REF.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="..."
+SUPABASE_SERVICE_ROLE_KEY="..."
+APP_URL="http://localhost:3000"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`DATABASE_URL` é usada pelo runtime. `DIRECT_URL` é usada por migrations, seed e verificações administrativas. Nunca exponha a chave service role em componentes client-side.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Para Google OAuth, habilite o provedor no Supabase e cadastre as URLs de callback do ambiente, incluindo:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```text
+http://localhost:3000/auth/callback
+```
 
-## Learn More
+## Instalação e banco
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm install
+pnpm db:generate
+pnpm db:migrate:deploy
+pnpm db:seed
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+O seed é idempotente. Para conferir as contagens e chaves únicas:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm exec tsx prisma/check-seed.ts
+```
 
-## Deploy on Vercel
+Para validar CRUD com rollback:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm exec tsx prisma/smoke-db.ts
+pnpm exec tsx prisma/smoke-db.ts --pooled
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Desenvolvimento
+
+```bash
+pnpm dev
+```
+
+Acesse `http://localhost:3000`.
+
+## Qualidade
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:e2e
+pnpm build
+```
+
+## Arquitetura
+
+```text
+src/
+├── app/                    # rotas, layouts, loading e error boundaries
+├── actions/                # Server Actions de autenticação
+├── components/             # componentes visuais reutilizáveis
+├── features/
+│   ├── vocabulary/         # feed, biblioteca e áudio
+│   ├── review/             # política, serviços, ações e UI de revisão
+│   └── progress/           # streak, missões, conquistas e dashboard
+├── lib/
+│   ├── dal/                # acesso autorizado aos dados
+│   ├── supabase/           # clientes browser, server e request
+│   └── prisma.ts           # client Prisma do runtime
+└── proxy.ts                # refresh de sessão e gates otimistas
+```
+
+As verificações de autorização ficam próximas aos dados e são repetidas em cada Server Action. O proxy serve apenas para refresh de sessão e redirecionamentos otimistas.
+
+## Planejamento
+
+O andamento detalhado e os critérios de validação estão em [`doc/development-plan.md`](doc/development-plan.md).

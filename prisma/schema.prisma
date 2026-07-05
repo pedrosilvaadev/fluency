@@ -42,6 +42,13 @@ enum ReviewSessionStatus {
   @@map("review_session_status")
 }
 
+enum ReviewSessionSource {
+  FEED   @map("feed")
+  REVIEW @map("review")
+
+  @@map("review_session_source")
+}
+
 enum AchievementType {
   WORDS_LEARNED     @map("words_learned")
   REVIEWS_COMPLETED @map("reviews_completed")
@@ -117,9 +124,10 @@ model UserVocabulary {
   createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  vocabulary Vocabulary      @relation(fields: [vocabularyId], references: [id], onDelete: Restrict)
-  attempts   ReviewAttempt[]
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vocabulary   Vocabulary          @relation(fields: [vocabularyId], references: [id], onDelete: Restrict)
+  attempts     ReviewAttempt[]
+  sessionItems ReviewSessionItem[]
 
   @@unique([userId, vocabularyId])
   @@unique([id, userId])
@@ -132,6 +140,7 @@ model UserVocabulary {
 model ReviewSession {
   id             String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId         String              @map("user_id") @db.Uuid
+  source         ReviewSessionSource @default(FEED)
   status         ReviewSessionStatus @default(IN_PROGRESS)
   totalCards     Int                 @default(0) @map("total_cards")
   correctAnswers Int                 @default(0) @map("correct_answers")
@@ -141,13 +150,32 @@ model ReviewSession {
   createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   attempts ReviewAttempt[]
+  items    ReviewSessionItem[]
 
   @@unique([id, userId])
   @@index([userId, status, createdAt])
   @@index([userId, completedAt])
   @@map("review_sessions")
+}
+
+model ReviewSessionItem {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId        String    @map("session_id") @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  userVocabularyId String    @map("user_vocabulary_id") @db.Uuid
+  position         Int
+  consumedAt       DateTime? @map("consumed_at") @db.Timestamptz(3)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  session        ReviewSession  @relation(fields: [sessionId, userId], references: [id, userId], onDelete: Cascade)
+  userVocabulary UserVocabulary @relation(fields: [userVocabularyId, userId], references: [id, userId], onDelete: Restrict)
+
+  @@unique([sessionId, userVocabularyId])
+  @@unique([sessionId, position])
+  @@index([userVocabularyId, userId])
+  @@map("review_session_items")
 }
 
 model ReviewAttempt {
@@ -168,6 +196,7 @@ model ReviewAttempt {
   user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userVocabulary UserVocabulary @relation(fields: [userVocabularyId], references: [id], onDelete: Restrict)
 
+  @@unique([sessionId, userVocabularyId])
   @@index([sessionId])
   @@index([userId, createdAt])
   @@index([userVocabularyId, createdAt])
