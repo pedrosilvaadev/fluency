@@ -22,7 +22,7 @@ export function AppShell({
   );
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-2xl flex-col overflow-hidden border-x border-white/5 bg-zinc-950/55 shadow-2xl shadow-black/30">
+    <div className="mx-auto flex h-svh w-full max-w-2xl flex-col overflow-hidden border-x border-white/5 bg-zinc-950/55 shadow-2xl shadow-black/30">
       <a
         href="#main-content"
         className="fixed left-4 top-4 z-[60] -translate-y-24 rounded-full bg-white px-4 py-2 text-sm font-semibold text-zinc-950 transition-transform focus:translate-y-0 motion-reduce:transition-none"

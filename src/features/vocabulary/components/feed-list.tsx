@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import type { VocabularyCardDto } from "@/features/review/application/contracts";
 import {
@@ -45,9 +45,20 @@ export function FeedList({
   );
   const [message, setMessage] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const scrollFrameRef = useRef<number | null>(null);
   const loadingMoreRef = useRef(false);
   const currentCard = Math.min(currentIndex + 1, totalCount);
   const remainingCards = Math.max(totalCount - currentCard, 0);
+
+  useEffect(() => {
+    return () => {
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+      }
+    };
+  }, []);
 
   function rate(id: string, rating: VocabularyRating) {
     setMessage(null);
@@ -113,6 +124,34 @@ export function FeedList({
     });
   }
 
+  function handleScroll() {
+    const element = scrollContainerRef.current;
+    if (!element || scrollFrameRef.current !== null) return;
+
+    scrollFrameRef.current = window.requestAnimationFrame(() => {
+      scrollFrameRef.current = null;
+
+      let nearestIndex = 0;
+      let nearestDistance = Number.POSITIVE_INFINITY;
+
+      cardRefs.current.forEach((card, index) => {
+        if (!card) return;
+
+        const distance = Math.abs(card.offsetTop - element.scrollTop);
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestIndex = index;
+        }
+      });
+
+      const remaining =
+        element.scrollHeight - element.scrollTop - element.clientHeight;
+
+      setCurrentIndex(Math.min(nearestIndex, items.length - 1));
+      if (remaining < element.clientHeight * 2) loadMore();
+    });
+  }
+
   return (
     <div className="relative h-full overflow-hidden">
       {message ? (
@@ -124,21 +163,15 @@ export function FeedList({
         </p>
       ) : null}
       <div
+        ref={scrollContainerRef}
         className="h-full snap-y snap-mandatory overflow-y-auto overscroll-y-contain scroll-smooth"
-        onScroll={(event) => {
-          const element = event.currentTarget;
-          const nextIndex = Math.round(
-            element.scrollTop / element.clientHeight,
-          );
-          const remaining =
-            element.scrollHeight - element.scrollTop - element.clientHeight;
-
-          setCurrentIndex(Math.min(nextIndex, items.length - 1));
-          if (remaining < element.clientHeight * 2) loadMore();
-        }}
+        onScroll={handleScroll}
       >
         {items.map((item, index) => (
           <motion.div
+            ref={(element) => {
+              cardRefs.current[index] = element;
+            }}
             key={item.id}
             className="h-full snap-start snap-always pt-3"
             initial={
