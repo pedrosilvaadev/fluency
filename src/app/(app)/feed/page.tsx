@@ -2,7 +2,6 @@ import { BookOpen } from "lucide-react";
 import type { Metadata } from "next";
 
 import { EmptyState } from "@/components/fluenty/empty-state";
-import { PageHeading } from "@/components/fluenty/page-heading";
 import { listVocabulary } from "@/features/review/server/review-api";
 import { FeedList } from "@/features/vocabulary/components/feed-list";
 
@@ -15,16 +14,12 @@ export default async function FeedPage() {
   const vocabulary = await listVocabulary({ limit: 20 });
 
   return (
-    <>
-      <PageHeading
-        eyebrow="Descobrir"
-        title="Seu feed de palavras"
-        description="Avalie o que você já sabe. Cada resposta alimenta sua revisão inteligente."
-      />
+    <section className="reels-feed h-full" aria-label="Feed de palavras">
       {vocabulary.items.length ? (
         <FeedList
           initialItems={vocabulary.items}
           initialCursor={vocabulary.nextCursor}
+          totalCount={vocabulary.totalCount}
         />
       ) : (
         <EmptyState
@@ -33,6 +28,6 @@ export default async function FeedPage() {
           description="O catálogo ainda está vazio. Execute o seed para começar."
         />
       )}
-    </>
+    </section>
   );
 }

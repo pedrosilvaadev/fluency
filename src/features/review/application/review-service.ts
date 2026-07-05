@@ -50,21 +50,22 @@ export class ReviewService {
     input: VocabularyFiltersInput,
   ): Promise<VocabularyPageDto> {
     const filters = vocabularyFiltersSchema.parse(input);
+    const where = {
+      category: filters.category,
+      level: filters.level,
+      users:
+        filters.savedOnly || filters.status
+          ? {
+              some: {
+                userId: filters.userId,
+                isSaved: filters.savedOnly ? true : undefined,
+                status: filters.status,
+              },
+            }
+          : undefined,
+    };
     const records = await this.db.vocabulary.findMany({
-      where: {
-        category: filters.category,
-        level: filters.level,
-        users:
-          filters.savedOnly || filters.status
-            ? {
-                some: {
-                  userId: filters.userId,
-                  isSaved: filters.savedOnly ? true : undefined,
-                  status: filters.status,
-                },
-              }
-            : undefined,
-      },
+      where,
       include: {
         users: { where: { userId: filters.userId }, take: 1 },
       },
@@ -75,6 +76,7 @@ export class ReviewService {
     });
     const hasMore = records.length > filters.limit;
     const page = records.slice(0, filters.limit);
+    const totalCount = await this.db.vocabulary.count({ where });
 
     return {
       items: page.map(({ users, ...vocabulary }): VocabularyCardDto => {
@@ -101,6 +103,7 @@ export class ReviewService {
         };
       }),
       nextCursor: hasMore ? (page.at(-1)?.id ?? null) : null,
+      totalCount,
     };
   }
 

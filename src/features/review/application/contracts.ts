@@ -22,6 +22,7 @@ export type VocabularyCardDto = Readonly<{
 export type VocabularyPageDto = Readonly<{
   items: VocabularyCardDto[];
   nextCursor: string | null;
+  totalCount: number;
 }>;
 
 export type ReviewAttemptDto = Readonly<{

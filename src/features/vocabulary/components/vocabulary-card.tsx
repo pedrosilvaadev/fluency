@@ -65,8 +65,12 @@ export function VocabularyCard({
   onToggleSaved,
 }: Readonly<VocabularyCardProps>) {
   return (
-    <article className="rounded-[2rem] border border-white/10 bg-zinc-950/70 p-5 shadow-2xl shadow-black/20 sm:p-7">
-      <header className="flex items-start justify-between gap-4">
+    <article className="relative flex h-full flex-col overflow-hidden bg-zinc-950/70 p-5 pb-[calc(9rem+env(safe-area-inset-bottom))] shadow-2xl shadow-black/20 sm:p-8 sm:pb-36">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-violet-600/20 blur-3xl"
+      />
+      <header className="relative flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="mb-3 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">
             <span className="rounded-full bg-white/[0.06] px-3 py-1">
@@ -104,17 +108,19 @@ export function VocabularyCard({
         </div>
       </header>
 
-      <div className="my-7 h-px bg-white/10" />
-      <p className="text-xl font-semibold text-violet-100">{translation}</p>
-      <figure className="mt-5 rounded-2xl border-l-2 border-violet-400 bg-violet-500/[0.07] p-4">
-        <blockquote className="leading-7 text-zinc-100">“{example}”</blockquote>
-        <figcaption className="mt-2 text-sm leading-6 text-zinc-400">
-          {exampleTranslation}
-        </figcaption>
-      </figure>
+      <div className="relative flex min-h-0 flex-1 flex-col justify-center py-5">
+        <div className="mb-6 h-px bg-white/10" />
+        <p className="text-xl font-semibold text-violet-100">{translation}</p>
+        <figure className="mt-5 rounded-2xl border-l-2 border-violet-400 bg-violet-500/[0.07] p-4 backdrop-blur-sm">
+          <blockquote className="leading-7 text-zinc-100">“{example}”</blockquote>
+          <figcaption className="mt-2 text-sm leading-6 text-zinc-400">
+            {exampleTranslation}
+          </figcaption>
+        </figure>
+      </div>
 
       <div
-        className="mt-7 grid grid-cols-3 gap-2"
+        className="relative grid grid-cols-3 gap-2"
         aria-label={`Avaliar conhecimento de ${word}`}
       >
         {ratings.map(({ value, label, icon: Icon, style }) => (

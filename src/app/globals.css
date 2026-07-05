@@ -30,6 +30,12 @@ body {
   color: white;
 }
 
+/* The feed owns its scroll area so every vocabulary card can fill one view. */
+main:has(> .reels-feed) {
+  overflow: hidden;
+  padding: 0;
+}
+
 @keyframes review-xp-pop {
   0% {
     opacity: 0;
