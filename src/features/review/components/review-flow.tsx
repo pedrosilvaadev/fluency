@@ -1,9 +1,10 @@
 "use client";
 
-import { BookOpenCheck, PartyPopper, Sparkles, X } from "lucide-react";
+import { BookOpenCheck, PartyPopper, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 
+import { DismissibleAlert } from "@/components/fluenty/dismissible-alert";
 import { EmptyState } from "@/components/fluenty/empty-state";
 import {
   ReviewCard,
@@ -152,20 +153,13 @@ export function ReviewFlow({
           Reserve alguns minutos. A sessão salva cada resposta imediatamente.
         </p>
         {message ? (
-          <div
-            className="mt-4 flex items-start gap-3 rounded-2xl bg-rose-500/10 px-4 py-3 text-left text-sm text-rose-200"
+          <DismissibleAlert
+            className="mt-4 text-left"
             role="alert"
+            onDismiss={() => setMessage(null)}
           >
-            <p className="min-w-0 flex-1">{message}</p>
-            <button
-              type="button"
-              aria-label="Fechar aviso"
-              onClick={() => setMessage(null)}
-              className="-mr-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-rose-100/80 transition-colors hover:bg-white/10 hover:text-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
-            >
-              <X aria-hidden size={16} />
-            </button>
-          </div>
+            {message}
+          </DismissibleAlert>
         ) : null}
         <button
           type="button"
@@ -195,20 +189,13 @@ export function ReviewFlow({
         ) : null}
       </div>
       {message ? (
-        <div
-          className="mb-4 flex items-start gap-3 rounded-2xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+        <DismissibleAlert
+          className="mb-4"
           role="alert"
+          onDismiss={() => setMessage(null)}
         >
-          <p className="min-w-0 flex-1">{message}</p>
-          <button
-            type="button"
-            aria-label="Fechar aviso"
-            onClick={() => setMessage(null)}
-            className="-mr-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-rose-100/80 transition-colors hover:bg-white/10 hover:text-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
-          >
-            <X aria-hidden size={16} />
-          </button>
-        </div>
+          {message}
+        </DismissibleAlert>
       ) : null}
       <ReviewCard
         key={item.id}

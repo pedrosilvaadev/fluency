@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowUp, X } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, useTransition } from "react";
 
+import { DismissibleAlert } from "@/components/fluenty/dismissible-alert";
 import type { VocabularyCardDto } from "@/features/review/application/contracts";
 import {
   loadVocabularyPageAction,
@@ -168,21 +169,15 @@ export function FeedList({
   return (
     <div className="relative h-full overflow-hidden">
       {message ? (
-        <div
-          className="absolute inset-x-4 top-4 z-30 flex items-start gap-3 rounded-2xl border border-violet-400/20 bg-zinc-900/95 px-4 py-3 text-sm text-violet-100 shadow-xl backdrop-blur"
+        <DismissibleAlert
+          className="absolute inset-x-4 top-4 z-30"
+          variant="info"
           role="status"
-          aria-live="polite"
+          ariaLive="polite"
+          onDismiss={() => setMessage(null)}
         >
-          <p className="min-w-0 flex-1">{message}</p>
-          <button
-            type="button"
-            aria-label="Fechar aviso"
-            onClick={() => setMessage(null)}
-            className="-mr-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-violet-100/80 transition-colors hover:bg-white/10 hover:text-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
-          >
-            <X aria-hidden size={16} />
-          </button>
-        </div>
+          {message}
+        </DismissibleAlert>
       ) : null}
       <div
         ref={scrollContainerRef}
