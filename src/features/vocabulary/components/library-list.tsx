@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Library } from "lucide-react";
+import { Library, X } from "lucide-react";
 import { useState, useTransition } from "react";
 
 import { EmptyState } from "@/components/fluenty/empty-state";
@@ -45,12 +45,20 @@ export function LibraryList({
   return (
     <div className="space-y-3">
       {error ? (
-        <p
-          className="rounded-2xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+        <div
+          className="flex items-start gap-3 rounded-2xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
           aria-live="polite"
         >
-          {error}
-        </p>
+          <p className="min-w-0 flex-1">{error}</p>
+          <button
+            type="button"
+            aria-label="Fechar aviso"
+            onClick={() => setError(null)}
+            className="-mr-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-rose-100/80 transition-colors hover:bg-white/10 hover:text-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+          >
+            <X aria-hidden size={16} />
+          </button>
+        </div>
       ) : null}
       {visibleItems.length ? (
         visibleItems.map((item) => (

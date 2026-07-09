@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { ArrowUp, X } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, useTransition } from "react";
 
@@ -51,6 +52,7 @@ export function FeedList({
   const loadingMoreRef = useRef(false);
   const currentCard = Math.min(currentIndex + 1, totalCount);
   const remainingCards = Math.max(totalCount - currentCard, 0);
+  const shouldShowBackToTop = currentCard > 5;
 
   useEffect(() => {
     return () => {
@@ -152,15 +154,35 @@ export function FeedList({
     });
   }
 
+  function scrollToTop() {
+    const element = scrollContainerRef.current;
+    if (!element) return;
+
+    element.scrollTo({
+      top: 0,
+      behavior: shouldReduceMotion ? "auto" : "smooth",
+    });
+    setCurrentIndex(0);
+  }
+
   return (
     <div className="relative h-full overflow-hidden">
       {message ? (
-        <p
-          className="pointer-events-none absolute inset-x-4 top-4 z-30 rounded-2xl border border-violet-400/20 bg-zinc-900/95 px-4 py-3 text-sm text-violet-100 shadow-xl backdrop-blur"
+        <div
+          className="absolute inset-x-4 top-4 z-30 flex items-start gap-3 rounded-2xl border border-violet-400/20 bg-zinc-900/95 px-4 py-3 text-sm text-violet-100 shadow-xl backdrop-blur"
+          role="status"
           aria-live="polite"
         >
-          {message}
-        </p>
+          <p className="min-w-0 flex-1">{message}</p>
+          <button
+            type="button"
+            aria-label="Fechar aviso"
+            onClick={() => setMessage(null)}
+            className="-mr-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-violet-100/80 transition-colors hover:bg-white/10 hover:text-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+          >
+            <X aria-hidden size={16} />
+          </button>
+        </div>
       ) : null}
       <div
         ref={scrollContainerRef}
@@ -175,9 +197,7 @@ export function FeedList({
             key={item.id}
             className="h-full snap-start snap-always pt-3"
             initial={
-              shouldReduceMotion
-                ? false
-                : { opacity: 0, scale: 0.96, y: 28 }
+              shouldReduceMotion ? false : { opacity: 0, scale: 0.96, y: 28 }
             }
             whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ amount: 0.65 }}
@@ -204,6 +224,19 @@ export function FeedList({
         <span className="absolute bottom-36 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/45 px-3 py-1.5 text-xs text-zinc-300 backdrop-blur">
           Carregando…
         </span>
+      ) : null}
+      {shouldShowBackToTop ? (
+        <motion.button
+          type="button"
+          aria-label="Voltar ao início do feed"
+          onClick={scrollToTop}
+          className="absolute bottom-[calc(8rem+env(safe-area-inset-bottom))] right-5 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-zinc-950/90 text-violet-100 shadow-2xl shadow-black/30 backdrop-blur transition-colors hover:bg-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 sm:right-8"
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+        >
+          <ArrowUp aria-hidden size={20} />
+        </motion.button>
       ) : null}
       <div className="absolute inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-30 border-y border-white/10 bg-zinc-950/85 px-5 py-3 backdrop-blur-xl sm:px-8">
         <div className="mb-2 flex items-center justify-between gap-4 text-xs font-medium">

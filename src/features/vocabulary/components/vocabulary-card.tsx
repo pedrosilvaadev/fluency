@@ -120,7 +120,7 @@ export function VocabularyCard({
       </div>
 
       <div
-        className="relative grid grid-cols-3 gap-2"
+        className="relative grid grid-cols-3 gap-2 max-w-[80%] mx-auto sm:max-w-none sm:gap-3"
         aria-label={`Avaliar conhecimento de ${word}`}
       >
         {ratings.map(({ value, label, icon: Icon, style }) => (

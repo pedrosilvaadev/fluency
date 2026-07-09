@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpenCheck, PartyPopper, Sparkles } from "lucide-react";
+import { BookOpenCheck, PartyPopper, Sparkles, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 
@@ -152,9 +152,20 @@ export function ReviewFlow({
           Reserve alguns minutos. A sessão salva cada resposta imediatamente.
         </p>
         {message ? (
-          <p className="mt-4 text-sm text-rose-200" role="alert">
-            {message}
-          </p>
+          <div
+            className="mt-4 flex items-start gap-3 rounded-2xl bg-rose-500/10 px-4 py-3 text-left text-sm text-rose-200"
+            role="alert"
+          >
+            <p className="min-w-0 flex-1">{message}</p>
+            <button
+              type="button"
+              aria-label="Fechar aviso"
+              onClick={() => setMessage(null)}
+              className="-mr-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-rose-100/80 transition-colors hover:bg-white/10 hover:text-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+            >
+              <X aria-hidden size={16} />
+            </button>
+          </div>
         ) : null}
         <button
           type="button"
@@ -184,12 +195,20 @@ export function ReviewFlow({
         ) : null}
       </div>
       {message ? (
-        <p
-          className="mb-4 rounded-2xl bg-rose-500/10 p-3 text-sm text-rose-200"
+        <div
+          className="mb-4 flex items-start gap-3 rounded-2xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
           role="alert"
         >
-          {message}
-        </p>
+          <p className="min-w-0 flex-1">{message}</p>
+          <button
+            type="button"
+            aria-label="Fechar aviso"
+            onClick={() => setMessage(null)}
+            className="-mr-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-rose-100/80 transition-colors hover:bg-white/10 hover:text-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+          >
+            <X aria-hidden size={16} />
+          </button>
+        </div>
       ) : null}
       <ReviewCard
         key={item.id}
